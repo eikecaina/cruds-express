@@ -1,29 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const router = (0, express_1.Router)();
-// GET todos os usuários
-router.get('/', (req, res) => {
-    res.json({ message: 'Lista de usuários', users: [] });
-});
-// GET usuário por ID
-router.get('/:id', (req, res) => {
-    const { id } = req.params;
-    res.json({ message: `Usuário ${id}`, user: { id, name: 'John Doe' } });
-});
-// POST criar novo usuário
-router.post('/', (req, res) => {
-    const { name, email } = req.body;
-    res.status(201).json({ message: 'Usuário criado', user: { id: 1, name, email } });
-});
-// PUT atualizar usuário
-router.put('/:id', (req, res) => {
-    const { id } = req.params;
-    res.json({ message: `Usuário ${id} atualizado` });
-});
-// DELETE remover usuário
-router.delete('/:id', (req, res) => {
-    const { id } = req.params;
-    res.json({ message: `Usuário ${id} removido` });
-});
-exports.default = router;
+const usersController_1 = require("../controllers/usersController");
+const usersController_2 = require("../controllers/usersController");
+const validateCreateUser_1 = require("../middlewares/validateCreateUser");
+const usersRouter = (0, express_1.Router)();
+usersRouter.post("/", validateCreateUser_1.validateCreateUser, usersController_2.createUserController);
+usersRouter.get("/", usersController_1.getUsersController);
+usersRouter.get("/:user_id", usersController_1.getUserByIdController);
+usersRouter.put("/:id", (0, usersController_1.updateUserController)(usersController_1.usersStore));
+usersRouter.delete("/:id", (0, usersController_1.deleteUserController)(usersController_1.usersStore));
+exports.default = usersRouter;

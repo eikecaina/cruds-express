@@ -1,19 +1,31 @@
-import { Request, Response } from 'express';
-import { createUserService, deleteUserService, getUsersService, updateUserService } from '../services/usersService';
-import { v4 as uuidv4 } from 'uuid';
+import { Request, Response } from "express";
+import {
+    createUserService,
+    deleteUserService,
+    getUsersService,
+    getUserByIdService,
+    updateUserService,
+} from "../services/usersService";
+import { v4 as uuidv4 } from "uuid";
 
 export type User = {
-    id: string;
+    user_id: string;
     name: string;
     email: string;
+    cpf: string;
 };
 
 export const usersStore: User[] = [];
 
-export const createUserController = (req: Request, res: Response) => {
-    const { name, email } = req.body;
-    const id = uuidv4();
-    const newUser = createUserService(usersStore, { id, name, email });
+export const createUserController = async (req: Request, res: Response) => {
+    const { name, email, cpf } = req.body;
+    const user_id = uuidv4();
+    const newUser = await createUserService(usersStore, {
+        user_id,
+        name,
+        email,
+        cpf,
+    });
 
     return res.json({
         message: `User ${name} with email ${email} created!`,
@@ -21,20 +33,41 @@ export const createUserController = (req: Request, res: Response) => {
     });
 };
 
-export const getUsersController = (req: Request, res: Response) => {
-    const users = getUsersService(usersStore);
-    return res.json({ message: 'Lista de users', users });
+export const getUserByIdController = async (req: Request, res: Response) => {
+    const user_id = Array.isArray(req.params.user_id)
+        ? req.params.user_id[0]
+        : req.params.user_id;
+
+    const user = await getUserByIdService(user_id);
+
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ message: "User encontrado", user });
+};
+
+export const getUsersController = async (req: Request, res: Response) => {
+    const users = await getUsersService(usersStore);
+    return res.json({ message: "Lista de users", users });
 };
 
 export const updateUserController =
     (users: User[]) => (req: Request, res: Response) => {
-        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-        const { name, email } = req.body;
+        const user_id = Array.isArray(req.params.user_id)
+            ? req.params.user_id[0]
+            : req.params.user_id;
+        const { name, email, cpf } = req.body;
 
-        const updatedUser = updateUserService(users, { id, name, email });
+        const updatedUser = updateUserService(users, {
+            user_id,
+            name,
+            email,
+            cpf,
+        });
 
         if (!updatedUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: "User not found" });
         }
 
         return res.json({
@@ -43,16 +76,18 @@ export const updateUserController =
         });
     };
 
-export const deleteUserController = (users: User[]) => (req: Request, res: Response) => {
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const deleted = deleteUserService(users, id);
+export const deleteUserController =
+    (users: User[]) => (req: Request, res: Response) => {
+        const user_id = Array.isArray(req.params.user_id)
+            ? req.params.user_id[0]
+            : req.params.user_id;
+        const deleted = deleteUserService(users, user_id);
 
-    if (!deleted) {
-        return res.status(404).json({ message: 'User not found' });
-    }
+        if (!deleted) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
-    return res.json({
-        message: `User with id ${id} deleted!`,
-    });
-}
-
+        return res.json({
+            message: `User with id ${user_id} deleted!`,
+        });
+    };

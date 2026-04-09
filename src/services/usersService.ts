@@ -1,20 +1,26 @@
-import { User } from '../controllers/usersController';
+import { User } from "../controllers/usersController";
+import {
+    createUser as createUserRepository,
+    findAllUsers,
+    findUserById as findUserByIdRepository,
+} from "../models/repository/userRepository";
 
 type UserInput = {
-    id: string;
+    user_id: string;
     name: string;
     email: string;
+    cpf: string;
 };
 
-export const createUserService = (users: User[], { id, name, email }: UserInput): User => {
-    const newUser = { id, name, email };
-
-    users.push(newUser);
-    return newUser;
+export const createUserService = async (
+    users: User[],
+    { user_id, name, email, cpf }: UserInput
+): Promise<User> => {
+    return createUserRepository({ user_id, name, email, cpf });
 };
 
-export const deleteUserService = (users: User[], id: string): boolean => {
-    const userIndex = users.findIndex((user) => user.id === id);
+export const deleteUserService = (users: User[], user_id: string): boolean => {
+    const userIndex = users.findIndex((user) => user.user_id === user_id);
 
     if (userIndex === -1) {
         return false;
@@ -24,15 +30,21 @@ export const deleteUserService = (users: User[], id: string): boolean => {
     return true;
 };
 
-export const getUsersService = (users: User[]): User[] => {
-    return users;
-}
+export const getUsersService = async (users: User[]): Promise<User[]> => {
+    return await findAllUsers();
+};
+
+export const getUserByIdService = async (
+    user_id: string
+): Promise<User | null> => {
+    return findUserByIdRepository(user_id);
+};
 
 export const updateUserService = (
     users: User[],
-    { id, name, email }: UserInput
+    { user_id, name, email }: UserInput
 ): User | null => {
-    const userIndex = users.findIndex((user) => user.id === id);
+    const userIndex = users.findIndex((user) => user.user_id === user_id);
 
     if (userIndex === -1) {
         return null;

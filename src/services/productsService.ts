@@ -1,17 +1,22 @@
-type ProductInput = {
-    id: string;
-    name: string;
-    price: number;
-}
+import {
+    findAllProducts,
+    Product,
+} from "../models/repository/productRepository";
 
-export const createProductService = (products: ProductInput[], { id, name, price }: ProductInput): ProductInput => {
-    const newProduct = { id, name, price };
+export const createProductService = (
+    products: Product[],
+    { id, name, price, category, brand, stock, voltage }: Product
+): Product => {
+    const newProduct = { id, name, price, category, brand, stock, voltage };
     products.push(newProduct);
     return newProduct;
 };
 
-export const deleteProductService = (products: ProductInput[], id: string): boolean => {
-    const productIndex = products.findIndex(p => p.id === id);
+export const deleteProductService = (
+    products: Product[],
+    id: string
+): boolean => {
+    const productIndex = products.findIndex((p) => p.id === id);
 
     if (productIndex === -1) {
         return false;
@@ -21,21 +26,32 @@ export const deleteProductService = (products: ProductInput[], id: string): bool
     return true;
 };
 
-export const getProductsService = (products: ProductInput[]): ProductInput[] => {
-    return products;
-}
+export const getProductsService = async (
+    products: Product[]
+): Promise<Product[]> => {
+    const dbProducts = findAllProducts();
+    return [...products, ...(await dbProducts)];
+};
 
 export const updateProductService = (
-    products: ProductInput[],
-    { id, name, price }: ProductInput
-): ProductInput | null => {
-    const productIndex = products.findIndex(p => p.id === id);
+    products: Product[],
+    { id, name, price, category, brand, stock, voltage }: Product
+): Product | null => {
+    const productIndex = products.findIndex((p) => p.id === id);
 
     if (productIndex === -1) {
         return null;
     }
 
-    const updatedProduct = { ...products[productIndex], name, price };
+    const updatedProduct = {
+        ...products[productIndex],
+        name,
+        price,
+        category,
+        brand,
+        stock,
+        voltage,
+    };
     products[productIndex] = updatedProduct;
     return updatedProduct;
-}
+};
